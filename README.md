@@ -75,7 +75,7 @@ Design a TUI layout visually → Export it as ANSI → Feed the ANSI output to y
 ```bash
 # Clone the repository
 git clone https://github.com/WatchmanReeves/TuiEasy.git
-cd TuiEasy/tui-easy
+cd TuiEasy
 
 # Install dependencies
 pnpm install    # or: npm install
