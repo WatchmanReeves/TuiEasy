@@ -856,7 +856,7 @@ export default function App() {
 
   return (
     <div className="flex h-[100dvh] bg-zinc-950 text-zinc-300 font-sans overflow-hidden">
-      <div className="hidden lg:flex w-16 flex-col items-center py-4 bg-zinc-900 border-r border-zinc-800 gap-4 z-10 shrink-0 overflow-y-auto">
+      <div className="hidden lg:flex w-16 flex-col items-center py-4 bg-zinc-900 border-r border-zinc-800 gap-4 z-10 shrink-0 overflow-y-auto" style={{ scrollbarWidth: 'none' }}>
         <ToolButton icon={<Pencil />} active={tool === 'pencil'} onClick={() => setTool('pencil')} tooltip="Pencil" />
         <ToolButton icon={<Paintbrush />} active={tool === 'paint'} onClick={() => setTool('paint')} tooltip="Paint Color (Keep Character)" />
         <ToolButton icon={<PaintRoller />} active={tool === 'paint-line'} onClick={() => setTool('paint-line')} tooltip="Paint Line (Keep Character)" />
