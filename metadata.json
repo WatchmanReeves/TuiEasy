@@ -1,0 +1,5 @@
+{
+  "name": "TUI Easy",
+  "description": "A canvas-based editor for designing text user interfaces (TUI) using glyphs, with tools for drawing lines, rectangles, and smart boxes.",
+  "requestFramePermissions": []
+}
