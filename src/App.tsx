@@ -887,14 +887,14 @@ export default function App() {
       </div>
 
       <div className="flex-1 flex flex-col relative min-w-0">
-        <div className="h-12 bg-zinc-900 border-b border-zinc-800 flex items-center px-4 justify-between shrink-0 z-10">
+        <div className="h-12 bg-zinc-900 border-b border-zinc-800 flex items-center px-2 lg:px-4 justify-between shrink-0 z-10">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2.5 select-none" title="TUI Easy - Too Easy!">
               <img src="/logo-icon.png" alt="" className="h-9 w-9 rounded-lg" />
               <span className="text-zinc-100 font-bold tracking-wide text-lg">Tui<span className="text-teal-400">Easy</span></span>
             </div>
             
-            <div className="w-px h-4 bg-zinc-800" />
+            <div className="w-px h-4 bg-zinc-800 hidden sm:block" />
 
             <div className="flex items-center gap-2 text-sm text-zinc-400">
               <span>Size:</span>
@@ -924,22 +924,22 @@ export default function App() {
             <button onClick={zoomOut} className="p-1.5 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded" title="Zoom Out">
               <ZoomOut size={18} />
             </button>
-            <span className="text-xs text-zinc-500 font-mono w-12 text-center">{Math.round(zoom * 100)}%</span>
+            <span className="text-xs text-zinc-500 font-mono w-12 text-center hidden sm:inline">{Math.round(zoom * 100)}%</span>
             <button onClick={zoomIn} className="p-1.5 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded" title="Zoom In">
               <ZoomIn size={18} />
             </button>
-            <div className="w-px h-4 bg-zinc-700 mx-1" />
-            <button onClick={zoomReset} className="p-1.5 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded" title="Reset Zoom (100%)">
+            <div className="w-px h-4 bg-zinc-700 mx-0.5 hidden sm:block" />
+            <button onClick={zoomReset} className="hidden sm:block p-1.5 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded" title="Reset Zoom (100%)">
               <RefreshCcw size={18} />
             </button>
             <button onClick={zoomFit} className="p-1.5 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded" title="Fit to Screen">
               <Maximize size={18} />
             </button>
-            <div className="w-px h-4 bg-zinc-700 mx-1" />
-            <button onClick={() => setHelpOpen(true)} className="p-1.5 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded" title="Help & Shortcuts (?)">
+            <div className="w-px h-4 bg-zinc-700 mx-0.5 hidden sm:block" />
+            <button onClick={() => setHelpOpen(true)} className="hidden sm:block p-1.5 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded" title="Help & Shortcuts (?)">
               <HelpCircle size={18} />
             </button>
-            <a href="https://github.com/WatchmanReeves/TuiEasy" target="_blank" rel="noopener noreferrer" className="p-1.5 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded" title="GitHub">
+            <a href="https://github.com/WatchmanReeves/TuiEasy" target="_blank" rel="noopener noreferrer" className="hidden sm:block p-1.5 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800 rounded" title="GitHub">
               <Github size={18} />
             </a>
           </div>
@@ -947,9 +947,9 @@ export default function App() {
 
         <div 
           ref={containerRef}
-          className="flex-1 overflow-auto bg-zinc-950 relative"
+          className="flex-1 overflow-auto bg-zinc-950 relative pb-16 lg:pb-0"
           onWheel={handleWheel}
-          style={{ touchAction: 'none', overscrollBehavior: 'none' }}
+          style={{ overscrollBehavior: 'contain' }}
         >
           <div className="min-w-full min-h-full flex items-center justify-center p-8">
             <div 
