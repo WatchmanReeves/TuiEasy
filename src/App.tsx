@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Pencil, Minus, Square, Eraser, Undo, Redo, Download, Type, LayoutTemplate, Trash2, ZoomIn, ZoomOut, Maximize, RefreshCcw, Image as ImageIcon, Paintbrush, PaintRoller, BookmarkPlus, Upload, FolderOpen, Github, HelpCircle } from 'lucide-react';
+import { Pencil, Minus, Square, Eraser, Undo, Redo, Download, Type, LayoutTemplate, Trash2, ZoomIn, ZoomOut, Maximize, RefreshCcw, Image as ImageIcon, Paintbrush, PaintRoller, BookmarkPlus, Upload, FolderOpen, Github, HelpCircle, Menu, Palette, Grid3X3, ChevronDown, X } from 'lucide-react';
 import { getLinePoints, snapLine, getRectPoints, getSmartRectPoints } from './utils/drawing';
 
 const STORAGE_KEY = 'tuieasy_save';
@@ -203,6 +203,13 @@ export default function App() {
   });
 
   const [helpOpen, setHelpOpen] = useState(false);
+
+  // Mobile bottom sheet state
+  const [mobileToolSheet, setMobileToolSheet] = useState(false);
+  const [mobileColorSheet, setMobileColorSheet] = useState(false);
+  const [mobileGlyphSheet, setMobileGlyphSheet] = useState(false);
+
+  const haptic = () => { try { navigator.vibrate?.(10); } catch {} };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -846,8 +853,8 @@ export default function App() {
   const baseCellH = 20;
 
   return (
-    <div className="flex h-screen bg-zinc-950 text-zinc-300 font-sans overflow-hidden">
-      <div className="w-16 flex flex-col items-center py-4 bg-zinc-900 border-r border-zinc-800 gap-4 z-10 shrink-0 overflow-y-auto">
+    <div className="flex h-[100dvh] bg-zinc-950 text-zinc-300 font-sans overflow-hidden">
+      <div className="hidden lg:flex w-16 flex-col items-center py-4 bg-zinc-900 border-r border-zinc-800 gap-4 z-10 shrink-0 overflow-y-auto">
         <ToolButton icon={<Pencil />} active={tool === 'pencil'} onClick={() => setTool('pencil')} tooltip="Pencil" />
         <ToolButton icon={<Paintbrush />} active={tool === 'paint'} onClick={() => setTool('paint')} tooltip="Paint Color (Keep Character)" />
         <ToolButton icon={<PaintRoller />} active={tool === 'paint-line'} onClick={() => setTool('paint-line')} tooltip="Paint Line (Keep Character)" />
@@ -942,6 +949,7 @@ export default function App() {
           ref={containerRef}
           className="flex-1 overflow-auto bg-zinc-950 relative"
           onWheel={handleWheel}
+          style={{ touchAction: 'none', overscrollBehavior: 'none' }}
         >
           <div className="min-w-full min-h-full flex items-center justify-center p-8">
             <div 
@@ -965,7 +973,7 @@ export default function App() {
         </div>
       </div>
 
-      <div className="w-64 bg-zinc-900 border-l border-zinc-800 flex flex-col z-10 shrink-0 overflow-y-auto">
+      <div className="hidden lg:flex w-64 bg-zinc-900 border-l border-zinc-800 flex-col z-10 shrink-0 overflow-y-auto">
         <div className="p-4 border-b border-zinc-800">
           <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">Colors</h3>
           <div className="flex flex-col gap-3">
@@ -1089,6 +1097,175 @@ export default function App() {
           </div>
         </div>
       </div>
+
+      {/* ===== MOBILE BOTTOM DOCK ===== */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden flex items-center justify-between bg-zinc-900/95 backdrop-blur-md border-t border-zinc-800 px-4 pt-3" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}>
+        {/* Tool picker */}
+        <button onClick={() => { setMobileToolSheet(s => !s); setMobileColorSheet(false); setMobileGlyphSheet(false); haptic(); }} className={`flex flex-col items-center gap-1 px-3 py-1 rounded-lg transition-colors ${mobileToolSheet ? 'text-teal-400' : 'text-zinc-400'}`}>
+          <Menu size={22} />
+          <span className="text-[10px]">Tools</span>
+        </button>
+        {/* Color picker */}
+        <button onClick={() => { setMobileColorSheet(s => !s); setMobileToolSheet(false); setMobileGlyphSheet(false); haptic(); }} className={`flex flex-col items-center gap-1 px-3 py-1 rounded-lg transition-colors ${mobileColorSheet ? 'text-teal-400' : 'text-zinc-400'}`}>
+          <div className="flex gap-1">
+            <div className="w-4 h-4 rounded-sm border border-zinc-600" style={{ backgroundColor: fg }} />
+            <div className="w-4 h-4 rounded-sm border border-zinc-600" style={{ backgroundColor: bg === 'transparent' ? '#0a0a0a' : bg }} />
+          </div>
+          <span className="text-[10px]">Colors</span>
+        </button>
+        {/* Fill toggle */}
+        <button onClick={() => { setFill(f => !f); haptic(); }} className={`flex flex-col items-center gap-1 px-3 py-1 rounded-lg transition-colors ${fill ? 'text-teal-400' : 'text-zinc-400'}`}>
+          <Square size={22} fill={fill ? 'currentColor' : 'none'} />
+          <span className="text-[10px]">Fill</span>
+        </button>
+        {/* Glyph picker */}
+        <button onClick={() => { setMobileGlyphSheet(s => !s); setMobileToolSheet(false); setMobileColorSheet(false); haptic(); }} className={`flex flex-col items-center gap-1 px-3 py-1 rounded-lg transition-colors ${mobileGlyphSheet ? 'text-teal-400' : 'text-zinc-400'}`}>
+          <Grid3X3 size={22} />
+          <span className="text-[10px]">Glyphs</span>
+        </button>
+        {/* Undo/Redo */}
+        <div className="flex gap-2">
+          <button onClick={() => { undo(); haptic(); }} disabled={historyIndex <= 0} className="p-2 text-zinc-400 hover:text-zinc-100 disabled:opacity-30"><Undo size={20} /></button>
+          <button onClick={() => { redo(); haptic(); }} disabled={historyIndex >= history.length - 1} className="p-2 text-zinc-400 hover:text-zinc-100 disabled:opacity-30"><Redo size={20} /></button>
+        </div>
+      </div>
+
+      {/* ===== MOBILE TOOL SHEET ===== */}
+      {mobileToolSheet && (
+        <div className="fixed inset-0 z-30 lg:hidden" onClick={() => setMobileToolSheet(false)}>
+          <div className="absolute bottom-0 left-0 right-0 bg-zinc-900/98 backdrop-blur-xl border-t border-zinc-800 rounded-t-2xl" style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }} onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-zinc-700 rounded-full mx-auto mt-3 mb-4" />
+            <div className="grid grid-cols-4 gap-3 px-6 pb-4">
+              {[
+                { icon: <Pencil size={22} />, tool: 'pencil' as Tool, label: 'Pencil' },
+                { icon: <Paintbrush size={22} />, tool: 'paint' as Tool, label: 'Paint' },
+                { icon: <PaintRoller size={22} />, tool: 'paint-line' as Tool, label: 'Paint Line' },
+                { icon: <Minus size={22} />, tool: 'line' as Tool, label: 'Line' },
+                { icon: <Square size={22} />, tool: 'rect' as Tool, label: 'Rectangle' },
+                { icon: <LayoutTemplate size={22} />, tool: 'smart-rect' as Tool, label: 'Smart Box' },
+                { icon: <Type size={22} />, tool: 'text' as Tool, label: 'Text' },
+                { icon: <Eraser size={22} />, tool: 'eraser' as Tool, label: 'Eraser' },
+                { icon: <ImageIcon size={22} />, tool: 'image-box' as Tool, label: 'Image' },
+              ].map(t => (
+                <button
+                  key={t.tool}
+                  onClick={() => { setTool(t.tool); setMobileToolSheet(false); haptic(); }}
+                  className={`flex flex-col items-center gap-1.5 p-3 rounded-xl transition-colors ${tool === t.tool ? 'bg-teal-600/20 text-teal-400 ring-1 ring-teal-500/50' : 'text-zinc-400 hover:bg-zinc-800'}`}
+                >
+                  {t.icon}
+                  <span className="text-[10px]">{t.label}</span>
+                </button>
+              ))}
+            </div>
+            <div className="border-t border-zinc-800 mx-6 pt-3 pb-2 flex gap-3">
+              <button onClick={() => { clearCanvas(); setMobileToolSheet(false); }} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-zinc-300 text-sm"><Trash2 size={16} /> Clear</button>
+              <button onClick={() => { exportAnsi(); setMobileToolSheet(false); }} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-zinc-300 text-sm"><Download size={16} /> Export</button>
+              <button onClick={() => { ansiInputRef.current?.click(); setMobileToolSheet(false); }} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-zinc-300 text-sm"><FolderOpen size={16} /> Import</button>
+              <button onClick={() => { setLibraryOpen(true); setMobileToolSheet(false); }} className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-zinc-300 text-sm"><LayoutTemplate size={16} /> Library</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== MOBILE COLOR SHEET ===== */}
+      {mobileColorSheet && (
+        <div className="fixed inset-0 z-30 lg:hidden" onClick={() => setMobileColorSheet(false)}>
+          <div className="absolute bottom-0 left-0 right-0 bg-zinc-900/98 backdrop-blur-xl border-t border-zinc-800 rounded-t-2xl" style={{ paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }} onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-zinc-700 rounded-full mx-auto mt-3 mb-4" />
+            <div className="px-6 pb-4 space-y-4">
+              <div className="flex items-center justify-between">
+                <label className="text-sm text-zinc-400">Foreground</label>
+                <input type="color" value={fg} onChange={e => setFg(e.target.value)} className="w-10 h-10 bg-zinc-800 border border-zinc-700 cursor-pointer rounded-lg" />
+              </div>
+              <div className="flex items-center justify-between">
+                <label className="text-sm text-zinc-400">Background</label>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setBg('transparent')} className={`px-3 py-1.5 text-xs rounded-lg border transition-colors ${bg === 'transparent' ? 'bg-teal-600 border-teal-500 text-zinc-100' : 'bg-zinc-800 border-zinc-700 text-zinc-400'}`}>Clear</button>
+                  <input type="color" value={bg === 'transparent' ? '#000000' : bg} onChange={e => setBg(e.target.value)} className="w-10 h-10 bg-zinc-800 border border-zinc-700 cursor-pointer rounded-lg" />
+                </div>
+              </div>
+              {savedColors.length > 0 && (
+                <div>
+                  <div className="text-xs text-zinc-500 uppercase tracking-wider mb-2">Saved Colors</div>
+                  <div className="flex flex-wrap gap-2">
+                    {savedColors.map(c => (
+                      <button key={c} onClick={() => { setFg(c); haptic(); }} className="w-8 h-8 rounded-lg border border-zinc-700 hover:scale-110 transition-transform" style={{ backgroundColor: c }} />
+                    ))}
+                  </div>
+                </div>
+              )}
+              <button onClick={() => { setSavedColors(prev => [...new Set([...prev, fg])]); haptic(); }} className="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-zinc-300 text-sm flex items-center justify-center gap-2"><BookmarkPlus size={16} /> Save Current Color</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===== MOBILE GLYPH SHEET ===== */}
+      {mobileGlyphSheet && (
+        <div className="fixed inset-0 z-30 lg:hidden" onClick={() => setMobileGlyphSheet(false)}>
+          <div className="absolute bottom-0 left-0 right-0 bg-zinc-900/98 backdrop-blur-xl border-t border-zinc-800 rounded-t-2xl" style={{ height: '85vh', paddingBottom: 'calc(5rem + env(safe-area-inset-bottom, 0px))' }} onClick={e => e.stopPropagation()}>
+            <div className="w-10 h-1 bg-zinc-700 rounded-full mx-auto mt-3 mb-3" />
+            <div className="flex flex-col h-full px-4 pb-4">
+              {/* Category chips */}
+              <div className="flex gap-2 overflow-x-auto pb-3 shrink-0" style={{ scrollbarWidth: 'none' }}>
+                {Object.keys(GLYPH_CATEGORIES).map(cat => (
+                  <button
+                    key={cat}
+                    onClick={() => { setGlyphCategory(cat); haptic(); }}
+                    className={`px-3 py-1.5 rounded-full text-xs whitespace-nowrap transition-colors ${glyphCategory === cat ? 'bg-teal-600 text-zinc-100' : 'bg-zinc-800 text-zinc-400'}`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+              {/* Box weight sub-pills */}
+              {glyphCategory === 'Box Drawing' && (
+                <div className="flex gap-1.5 pb-3 shrink-0 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+                  {Object.keys(GLYPH_CATEGORIES['Box Drawing']).map(weight => (
+                    <button
+                      key={weight}
+                      onClick={() => { setBoxWeight(weight); haptic(); }}
+                      className={`px-2 py-1 text-xs rounded-lg transition-colors ${boxWeight === weight ? 'bg-teal-600 text-zinc-100' : 'bg-zinc-800 text-zinc-400'}`}
+                    >
+                      {weight}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {/* Favorite glyphs */}
+              {savedGlyphs.length > 0 && (
+                <div className="pb-3 shrink-0">
+                  <div className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1.5">Favorites</div>
+                  <div className="flex gap-1.5 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+                    {savedGlyphs.map(g => (
+                      <button key={g} onClick={() => { setChar(g); setMobileGlyphSheet(false); haptic(); }} className={`w-10 h-10 flex items-center justify-center font-mono text-lg rounded-lg border transition-colors shrink-0 ${char === g ? 'bg-teal-600/20 text-teal-400 border-teal-500' : 'border-zinc-700 bg-zinc-800 text-zinc-300'}`}>{g}</button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {/* Glyph grid */}
+              <div className="flex-1 overflow-y-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#3f3f46 transparent' }}>
+                <div className="grid grid-cols-8 gap-1">
+                  {(glyphCategory === 'Box Drawing'
+                    ? (GLYPH_CATEGORIES['Box Drawing'] as Record<string, string[]>)[boxWeight]
+                    : GLYPH_CATEGORIES[glyphCategory] as string[]
+                  ).map(g => (
+                    <button
+                      key={g}
+                      onClick={() => { setChar(g); setMobileGlyphSheet(false); haptic(); }}
+                      className={`w-full aspect-square flex items-center justify-center font-mono text-lg rounded-lg transition-colors ${char === g ? 'bg-teal-600/20 text-teal-400 ring-1 ring-teal-500' : 'text-zinc-300 hover:bg-zinc-800'}`}
+                    >
+                      {g}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Save glyph button */}
+              <button onClick={() => { setSavedGlyphs(prev => [...new Set([...prev, char])]); haptic(); }} className="mt-3 w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-zinc-300 text-sm flex items-center justify-center gap-2 shrink-0"><BookmarkPlus size={16} /> Save "{char}" to Favorites</button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {libraryOpen && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
