@@ -965,7 +965,7 @@ export default function App() {
         </div>
       </div>
 
-      <div className="w-64 bg-zinc-900 border-l border-zinc-800 flex flex-col z-10 shrink-0">
+      <div className="w-64 bg-zinc-900 border-l border-zinc-800 flex flex-col z-10 shrink-0 overflow-y-auto">
         <div className="p-4 border-b border-zinc-800">
           <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-3">Colors</h3>
           <div className="flex flex-col gap-3">
