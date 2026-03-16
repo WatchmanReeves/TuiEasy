@@ -208,8 +208,10 @@ export default function App() {
   const [mobileToolSheet, setMobileToolSheet] = useState(false);
   const [mobileColorSheet, setMobileColorSheet] = useState(false);
   const [mobileGlyphSheet, setMobileGlyphSheet] = useState(false);
+  const [mobileDockOpen, setMobileDockOpen] = useState(false);
 
   const haptic = () => { try { navigator.vibrate?.(10); } catch {} };
+  const closeMobileAll = () => { setMobileDockOpen(false); setMobileToolSheet(false); setMobileColorSheet(false); setMobileGlyphSheet(false); };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -947,9 +949,10 @@ export default function App() {
 
         <div 
           ref={containerRef}
-          className="flex-1 overflow-auto bg-zinc-950 relative pb-16 lg:pb-0"
+          className="flex-1 overflow-auto bg-zinc-950 relative"
           onWheel={handleWheel}
           style={{ overscrollBehavior: 'contain' }}
+          onPointerDown={() => closeMobileAll()}
         >
           <div className="min-w-full min-h-full flex items-center justify-center p-8">
             <div 
@@ -1098,37 +1101,51 @@ export default function App() {
         </div>
       </div>
 
-      {/* ===== MOBILE BOTTOM DOCK ===== */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden flex items-center justify-between bg-zinc-900/95 backdrop-blur-md border-t border-zinc-800 px-4 pt-3" style={{ paddingBottom: 'calc(0.75rem + env(safe-area-inset-bottom, 0px))' }}>
-        {/* Tool picker */}
-        <button onClick={() => { setMobileToolSheet(s => !s); setMobileColorSheet(false); setMobileGlyphSheet(false); haptic(); }} className={`flex flex-col items-center gap-1 px-3 py-1 rounded-lg transition-colors ${mobileToolSheet ? 'text-teal-400' : 'text-zinc-400'}`}>
-          <Menu size={22} />
-          <span className="text-[10px]">Tools</span>
+      {/* ===== MOBILE FLOATING PILL ===== */}
+      {!mobileDockOpen && !mobileToolSheet && !mobileColorSheet && !mobileGlyphSheet && (
+        <button
+          onClick={() => { setMobileDockOpen(true); haptic(); }}
+          className="fixed bottom-6 right-6 z-40 lg:hidden w-14 h-14 rounded-full bg-teal-600 shadow-lg shadow-teal-900/40 flex items-center justify-center text-white active:scale-95 transition-transform"
+          style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        >
+          <Menu size={24} />
         </button>
-        {/* Color picker */}
-        <button onClick={() => { setMobileColorSheet(s => !s); setMobileToolSheet(false); setMobileGlyphSheet(false); haptic(); }} className={`flex flex-col items-center gap-1 px-3 py-1 rounded-lg transition-colors ${mobileColorSheet ? 'text-teal-400' : 'text-zinc-400'}`}>
+      )}
+
+      {/* ===== MOBILE EXPANDED DOCK ===== */}
+      {mobileDockOpen && (
+        <div
+          className="fixed bottom-6 right-4 left-4 z-40 lg:hidden flex items-center justify-between bg-zinc-900/95 backdrop-blur-xl border border-zinc-700/50 rounded-2xl px-3 py-2.5 shadow-2xl shadow-black/50"
+          style={{ marginBottom: 'env(safe-area-inset-bottom, 0px)' }}
+        >
+          <button onClick={() => { setMobileToolSheet(s => !s); setMobileColorSheet(false); setMobileGlyphSheet(false); haptic(); }} className={`flex flex-col items-center gap-0.5 px-2.5 py-1 rounded-xl transition-colors ${mobileToolSheet ? 'text-teal-400 bg-teal-600/10' : 'text-zinc-400'}`}>
+            <Menu size={20} />
+            <span className="text-[9px]">Tools</span>
+          </button>
+          <button onClick={() => { setMobileColorSheet(s => !s); setMobileToolSheet(false); setMobileGlyphSheet(false); haptic(); }} className={`flex flex-col items-center gap-0.5 px-2.5 py-1 rounded-xl transition-colors ${mobileColorSheet ? 'text-teal-400 bg-teal-600/10' : 'text-zinc-400'}`}>
+            <div className="flex gap-0.5">
+              <div className="w-3.5 h-3.5 rounded-sm border border-zinc-600" style={{ backgroundColor: fg }} />
+              <div className="w-3.5 h-3.5 rounded-sm border border-zinc-600" style={{ backgroundColor: bg === 'transparent' ? '#0a0a0a' : bg }} />
+            </div>
+            <span className="text-[9px]">Colors</span>
+          </button>
+          <button onClick={() => { setFill(f => !f); haptic(); }} className={`flex flex-col items-center gap-0.5 px-2.5 py-1 rounded-xl transition-colors ${fill ? 'text-teal-400 bg-teal-600/10' : 'text-zinc-400'}`}>
+            <Square size={20} fill={fill ? 'currentColor' : 'none'} />
+            <span className="text-[9px]">Fill</span>
+          </button>
+          <button onClick={() => { setMobileGlyphSheet(s => !s); setMobileToolSheet(false); setMobileColorSheet(false); haptic(); }} className={`flex flex-col items-center gap-0.5 px-2.5 py-1 rounded-xl transition-colors ${mobileGlyphSheet ? 'text-teal-400 bg-teal-600/10' : 'text-zinc-400'}`}>
+            <Grid3X3 size={20} />
+            <span className="text-[9px]">Glyphs</span>
+          </button>
           <div className="flex gap-1">
-            <div className="w-4 h-4 rounded-sm border border-zinc-600" style={{ backgroundColor: fg }} />
-            <div className="w-4 h-4 rounded-sm border border-zinc-600" style={{ backgroundColor: bg === 'transparent' ? '#0a0a0a' : bg }} />
+            <button onClick={() => { undo(); haptic(); }} disabled={historyIndex <= 0} className="p-1.5 text-zinc-400 hover:text-zinc-100 disabled:opacity-30"><Undo size={18} /></button>
+            <button onClick={() => { redo(); haptic(); }} disabled={historyIndex >= history.length - 1} className="p-1.5 text-zinc-400 hover:text-zinc-100 disabled:opacity-30"><Redo size={18} /></button>
           </div>
-          <span className="text-[10px]">Colors</span>
-        </button>
-        {/* Fill toggle */}
-        <button onClick={() => { setFill(f => !f); haptic(); }} className={`flex flex-col items-center gap-1 px-3 py-1 rounded-lg transition-colors ${fill ? 'text-teal-400' : 'text-zinc-400'}`}>
-          <Square size={22} fill={fill ? 'currentColor' : 'none'} />
-          <span className="text-[10px]">Fill</span>
-        </button>
-        {/* Glyph picker */}
-        <button onClick={() => { setMobileGlyphSheet(s => !s); setMobileToolSheet(false); setMobileColorSheet(false); haptic(); }} className={`flex flex-col items-center gap-1 px-3 py-1 rounded-lg transition-colors ${mobileGlyphSheet ? 'text-teal-400' : 'text-zinc-400'}`}>
-          <Grid3X3 size={22} />
-          <span className="text-[10px]">Glyphs</span>
-        </button>
-        {/* Undo/Redo */}
-        <div className="flex gap-2">
-          <button onClick={() => { undo(); haptic(); }} disabled={historyIndex <= 0} className="p-2 text-zinc-400 hover:text-zinc-100 disabled:opacity-30"><Undo size={20} /></button>
-          <button onClick={() => { redo(); haptic(); }} disabled={historyIndex >= history.length - 1} className="p-2 text-zinc-400 hover:text-zinc-100 disabled:opacity-30"><Redo size={20} /></button>
+          <button onClick={() => { closeMobileAll(); haptic(); }} className="p-1.5 text-zinc-500 hover:text-zinc-300">
+            <X size={18} />
+          </button>
         </div>
-      </div>
+      )}
 
       {/* ===== MOBILE TOOL SHEET ===== */}
       {mobileToolSheet && (
